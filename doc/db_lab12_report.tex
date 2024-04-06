@@ -1,0 +1,337 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{wrapfig}
+\usepackage{multirow}
+\usepackage{mathtools}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{setspace}
+\usepackage{changepage}
+\usepackage{caption}
+\usepackage{csquotes}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\pgfplotsset{compat=1.18}
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = blue,
+  filecolor  = magenta,      
+  urlcolor   = darkgray,
+  pdftitle   = {
+    database-report-1-arslan-gin
+  },
+}
+  
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.99,0.99,0.99}
+
+\lstdefinestyle{codestyle}{
+  backgroundcolor=\color{backcolour},   
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  keepspaces=true,                 
+  numbers=left,                    
+  numbersep=5pt,                  
+  showspaces=false,                
+  showstringspaces=false,
+  showtabs=false,                  
+  tabsize=2
+}
+
+\graphicspath{ {./img/} }
+
+\lstset{style=codestyle}
+\lstnewenvironment{code}[1][]%
+  {\noindent\minipage{\linewidth}\medskip 
+   \lstset{basicstyle=\ttfamily\footnotesize,frame=single,#1}}
+  {\endminipage}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        \begin{spacing}{1.4}
+            \large{Университет ИТМО} \\
+            \large{Факультет программной инженерии и компьютерной техники} \\
+        \end{spacing}
+        \vfill
+        \textbf{
+            \huge{Базы данных.} \\
+            \huge{Лабораторная работа №1-2.} \\
+        }
+    \end{center}
+    \vfill
+    \begin{center}
+        \begin{tabular}{r l}
+            Группа:  & P33121                  \\
+            Студент: & Гиниятуллин Арслан Рафаилович \\
+            Вариант: & 5089
+        \end{tabular}
+    \end{center}
+    \vfill
+    \begin{center}
+        \begin{large}
+            2023
+        \end{large}
+    \end{center}
+\end{titlepage}
+
+\section*{Ключевые слова}
+
+База данных, PostgreSQL,
+даталогическая модель,
+инфологическая модель.
+
+\tableofcontents
+
+\section{Цель работы}
+
+Научиться проектировать базы данных,
+составлять инфологические и
+даталогические модели данных,
+реализовывать их в БД
+PostgreSQL, научиться выполнять
+запросы.
+
+\section{Текст задания}
+
+В 7.00 он приносил Пулу в рубку управления тюбик кофе из кухни и сменял его. Если докладывать было не о чем и никаких срочных мер не требовалось (а так обычно и бывало), он начинал считывать показания приборов, а затем проводил всякие пробы и замеры, проверяя, нормально ли работают все агрегаты корабля. К 10.00 он обычно завершал проверку и переходил к занятиям.
+
+
+\section{Описание предметной области}
+Действия текста из задания происходит с моряками на корабле, поэтому выделим две стержневые сущности: \textbf{sailor} и \textbf{ship}. У каждого моряка есть квалификация \textbf{profession} и соответствующие виды деятельности \textbf{responsibility}. Например, одной из важных задач является считывание показаний приборов и проведение замеров. Замеры будем считывать с каких-то агрегатов корабля \textbf{ship\_component} и записывать в журнал \textbf{ship\_component\_measurement}. Также будем вести запись действий \textbf{action}, которые совершает моряк в конкретном месте \textbf{location}.
+\section{Классификация сущностей}
+
+\begin{enumerate}
+    \item{\textbf{ship}} -- стержневая сущность
+    \item{\textbf{sailor}}-- стержневая сущность
+    \item{\textbf{profession}} -- характеристическая сущность
+    \item{\textbf{ship\_component\_measurement}} -- характеристическая сущность
+    \item{\textbf{action}} -- характеристическая сущность
+    \item{\textbf{location}} -- характеристическая сущность
+    \item{\textbf{ship\_component}} -- характеристическая сущность
+    \item{\textbf{responsibility}} -- ассоциативная сущность
+\end{enumerate}
+
+\section{Инфологическая модель}
+\begin{code}
+    erDiagram
+    ship |o--|{ ship_component: contains
+    ship {
+        id id
+        name name
+        manufacture_year manufacture_year
+    }
+    
+    sailor }o--o| profession: serve
+    sailor }o--|| location: located
+    sailor ||--o{ ship_component_measurement: measure
+    sailor {
+        id id
+        first_name first_name
+        last_name last_name
+        gender gender
+        profession_id profession_id
+        location_id location_id
+    }
+    
+    profession }o--|{ responsibility: requires
+    profession {
+        id id
+        name name
+    }
+    
+    responsibility {
+        id id
+        name name
+    }
+    
+    location {
+        id id
+        name name
+        latitude latitude
+        longitude longitude
+    }
+    
+    action ||--|{ sailor: done_by
+    action {
+        id id
+        name name
+        description description
+        start_time start_time
+        duration duration
+        sailor_id sailor_id
+    }
+    
+    ship_component {
+        id id
+        name name
+        serial_number serial_number
+        ship_id ship_id
+    }
+    
+    ship_component_measurment }o--|| ship_component: consist
+    ship_component_measurment {
+        name name
+        result result
+        unit unit
+        sailor_id sailor_id
+        ship_component_id ship_component_id
+    }
+\end{code}
+\begin{figure}[ht]
+    \includegraphics[scale=0.5]{./high-er-diagram.png}
+    \caption{ERD infological from mermaid.live}
+\centering
+\end{figure}
+
+\section{Даталогическая модель}
+\begin{code}
+erDiagram
+    ship |o--|{ ship_component: contains
+    ship {
+        int id PK
+        varchar(100) name
+        date manufacture_year
+    }
+    
+    sailor }o--o| profession: serve
+    sailor }o--|| location: located
+    sailor ||--o{ ship_component_measurment: measure
+    sailor {
+        int id PK
+        varchar(50) first_name
+        varchar(50) last_name
+        enum_gender gender
+        int profession_id FK
+        int location_id FK
+    }
+    
+    profession ||--|{ profession_responsibility: requires
+    profession {
+        int id PK
+        varchar(100) name
+    }
+    
+    profession_responsibility {
+        int profession_id FK
+        int responsibility_id FK
+        pair_int profession_id_responsibility_id PK
+    }
+    
+    responsibility ||--|{ profession_responsibility: commits
+    responsibility {
+        int id PK
+        varchar(100) name
+        text description
+    }
+    
+    location {
+        int id PK
+        varchar(250) name
+        decimal(10)8 latitude
+        decimal(10)8 longitude
+    }
+    
+    action ||--|{ sailor: done_by
+    action {
+        int id PK
+        varchar(50) name
+        text description
+        timestamp start_time
+        interval duration
+        int sailor_id FK
+    }
+    ship_component {
+        int id PK
+        varchar(100) name
+        varchar(50) serial_number
+        int ship_id FK
+    }
+    
+    ship_component_measurment }o--|| ship_component: consist
+v REuni
+
+s
+s
+ship_component_measurment {
+        varchar(50) name
+        real result
+        enum_unit unit
+        int sailor_id FK
+        int ship_component_id FK
+    }    
+\end{code}
+\begin{figure}[th]
+    \includegraphics[scale=0.5]{./low-er-diagram.png}
+    \caption{ERD datalogical from mermaid.live}
+    \centering
+\end{figure}
+
+\section{Функциональные зависимости}
+\begin{code}
+    ship:
+        id -> name
+        id -> manufacture_year
+
+    sailor:
+        id -> first_name
+        id -> last_name
+        id -> gender
+        id -> profession_id
+        id -> location_id
+
+    profession: 
+        id -> name
+
+    responsibility:
+        id -> name
+        id -> description
+
+    location:
+        id -> name
+        id -> latitude
+        id -> longitude
+
+    action:
+        id -> name
+        id -> description
+        id -> start_time
+        id -> duration
+        id -> sailor_id
+        
+    ship_component:
+        id -> name
+        id -> serial_number
+        id -> ship_id
+\end{code}
+
+\section{1 Нормальая форма.}
+    Отношение находится в 1 НФ, так как в каждом столбце не более одного аттрибута. Нет идентичных столбцов.
+    
+\section{2 Нормальная форма.}
+    Отношение находится в 2 НФ, так как аттрибуты зависят целиком от PK, а не от его части. В данных переменных отношения ключи либо суррогатные и простые, либо естественные, покрывающие всю таблицу.
+
+\section{3 Нормальная форма.}
+    Отношение находится в 3 НФ, так как нет транзитивных функциональных зависимостей между аттрибутами: аттрибуты зависят исключительно от PK, но не друг от друга.
+
+\section{Нормальная форма Бойса-Кодда.}
+    Отношение находится в БКНФ, так как всякий детерминант является потенциальным ключом отношения: нет зависимости неключевых аттрибутов от ключевых
+
+\section{Денормализация.}
+    Можем объединить таблицы \textbf{ship\_component\_measurement} и \textbf{ship\_component}. Тогда при записи измерений об одном и том же агрегате придется дублировать информацию в таблице \textbf{ship\_component\_measurement}, что ведет к нарушению 3 НФ, так как аттрибуты таблицы \textbf{ship\_component} не связаны с результатом измерений. Если же, например объединить \textbf{profession} и \textbf{responsibility}, добавив массив аттрибутов ответственностей в колонку \textbf{responsibilities}, нарушим 1 НФ.
+\end{document}
